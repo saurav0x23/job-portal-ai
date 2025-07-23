@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { create } from "zustand";
 
 type Job = {
@@ -7,6 +8,7 @@ type Job = {
   description: string;
   required_skills: string[];
   relevance: number;
+  matchedSkills?: number;
 };
 
 type AIInsights = {
@@ -20,7 +22,7 @@ type JobState = {
   aiInsights: AIInsights;
   loading: boolean;
   error: string | null;
-  fetchJobs: (resume: File) => Promise<void>;
+  fetchJobs: (resumeUrl: string) => Promise<void>;
   reset: () => void;
 };
 
@@ -30,37 +32,65 @@ export const useJobStore = create<JobState>((set) => ({
   loading: false,
   error: null,
 
-  fetchJobs: async (resumeFile) => {
+  fetchJobs: async (resumeUrl: string) => {
     set({ loading: true, error: null });
 
     try {
-      const formData = new FormData();
-      formData.append("resume", resumeFile);
+      // Verify the URL is valid
+      if (!resumeUrl || !resumeUrl.startsWith("http")) {
+        throw new Error("Invalid resume URL");
+      }
 
+      // Create FormData and append the URL
+      const formData = new FormData();
+      formData.append("resumeUrl", resumeUrl);
+
+      // Make the API request
       const response = await fetch("/api/process-resume", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      const { jobs, aiInsights } = await response.json();
-      set({ jobs, aiInsights, loading: false });
+      const result = await response.json();
+
+      if (!result.jobs || !result.aiInsights) {
+        throw new Error("Invalid response format from server");
+      }
+
+      set({
+        jobs: result.jobs,
+        aiInsights: result.aiInsights,
+        loading: false,
+        error: null,
+      });
+
+      toast.success(
+        `Found ${result.jobs.length} matching jobs!` +
+          (result.summary ? ` Top match: ${result.summary.topRelevance}%` : "")
+      );
     } catch (error: any) {
-      console.error("Fetch jobs failed:", error);
+      console.error("Job recommendation error:", error);
       set({
         loading: false,
-        error: error.message || "Failed to process resume",
+        error: error.message || "Failed to get job recommendations",
+        jobs: [],
+        aiInsights: { titles: [], skills: [], experience: "" },
       });
+      toast.error(error.message || "Failed to process resume");
     }
   },
 
-  reset: () =>
+  reset: () => {
     set({
       jobs: [],
       aiInsights: { titles: [], skills: [], experience: "" },
       error: null,
-    }),
+      loading: false,
+    });
+  },
 }));

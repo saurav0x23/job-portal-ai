@@ -1,8 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
-
-("use client");
 
 interface UserData {
   id: string;

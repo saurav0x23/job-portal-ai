@@ -5,6 +5,8 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import Loader from "@/components/Loader";
 import { useEffect, useState } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { createClient } from "@/utils/supabase/client";
 
 export default function RootLayout({
   children,
@@ -30,6 +32,20 @@ export default function RootLayout({
       document.body.style.overflow = "";
     }
   }, [loading]);
+
+  const checkAuth = async () => {
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = "/login"; // Redirect to login if not authenticated
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">
@@ -45,6 +61,7 @@ export default function RootLayout({
             <>
               <Navbar />
               {children}
+              <Toaster richColors />
             </>
           )}
         </ThemeProvider>
