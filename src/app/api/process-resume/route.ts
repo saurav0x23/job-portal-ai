@@ -6,15 +6,6 @@ import { NextResponse } from "next/server";
 import mammoth from "mammoth";
 import PDFParser from "pdf2json";
 
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  company: string;
-  location: string;
-  skills: string[];
-}
-
 // Extract PDF text using pdf2json
 async function extractTextWithPdf2json(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {

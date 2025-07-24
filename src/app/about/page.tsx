@@ -1,4 +1,4 @@
-import { Users, Rocket, BarChart2, Globe, Shield } from "lucide-react";
+import { Users, Rocket, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const AboutPage = () => {
@@ -61,8 +61,8 @@ const AboutPage = () => {
         <h2 className="text-3xl font-bold mb-6 text-center">Our Story</h2>
         <div className="space-y-6 text-muted-foreground">
           <p>
-            Founded in 2023, SkillSync emerged from our team's frustration
-            with traditional job search platforms. We noticed that qualified
+            Founded in 2023, SkillSync emerged from our team's frustration with
+            traditional job search platforms. We noticed that qualified
             candidates were being overlooked due to poorly optimized resumes and
             inefficient matching algorithms.
           </p>
