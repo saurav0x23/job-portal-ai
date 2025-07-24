@@ -1,8 +1,16 @@
 "use client";
+import { JobsGrid } from "@/components/JobsGrid";
 import { Button } from "@/components/ui/button";
 import { useJobStore } from "@/utils/store/useJobStore";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, UploadIcon } from "lucide-react";
+import {
+  Loader2,
+  UploadIcon,
+  FileText,
+  Trash2,
+  ExternalLink,
+  CheckCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -12,7 +20,7 @@ export default function UploadResume() {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [resumeChecked, setResumeChecked] = useState(false);
-  const { jobs, fetchJobs } = useJobStore();
+  const { jobs, relevence, fetchJobs } = useJobStore();
 
   const supabase = createClient();
   const maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -114,7 +122,7 @@ export default function UploadResume() {
 
           setFileUrl(publicUrl);
           toast.success("Resume uploaded successfully!");
-        } catch (err) {
+        } catch (err: any) {
           console.error("Upload error:", err);
           toast.error(err.message || "Failed to upload resume");
         } finally {
@@ -180,120 +188,161 @@ export default function UploadResume() {
 
   if (!resumeChecked) {
     return (
-      <div className="text-center py-12">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="mt-4 text-muted-foreground">Checking your resume...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-muted rounded-full"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <p className="text-sm text-muted-foreground font-medium">
+          Checking your resume...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {!fileUrl && (
-        <div
-          {...getRootProps()}
-          className={`border-dashed border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
-            isDragActive ? "border-primary bg-muted" : "border-muted"
-          } ${uploading ? "opacity-70 cursor-not-allowed" : ""}`}
-        >
-          <input {...getInputProps()} />
-          {uploading ? (
-            <div className="flex flex-col items-center">
-              <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
-              <p className="mt-4">Uploading resume...</p>
-            </div>
-          ) : (
-            <>
-              <UploadIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-              <p className="mt-2 font-medium">Drag & drop your resume</p>
-              <p className="text-sm text-muted-foreground">
-                PDF or DOCX (max 5MB)
-              </p>
-            </>
-          )}
-        </div>
-      )}
+    <div className="max-w-6xl mx-auto space-y-8 p-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Upload Your Resume
+        </h1>
+        <p className="text-muted-foreground">
+          Get personalized job recommendations based on your experience
+        </p>
+      </div>
 
-      {fileUrl && (
-        <div className="p-6 border rounded-lg bg-muted/50 space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-lg font-semibold">Your Resume:</p>
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                View Resume
-              </a>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRemoveResume}
-              disabled={loading}
+      {/* Upload Section */}
+      <div className="flex flex-col items-center justify-center">
+        {!fileUrl && (
+          <div className="space-y-4 max-w-4xl">
+            <div
+              {...getRootProps()}
+              className={`relative overflow-hidden rounded-xl border-2 border-dashed transition-all duration-200 ${
+                isDragActive
+                  ? "border-primary bg-primary/5 scale-[1.02]"
+                  : "border-muted-foreground/25 hover:border-muted-foreground/40"
+              } ${
+                uploading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
-              Remove
-            </Button>
-          </div>
-
-          <Button
-            onClick={handleRecommendJobs}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing Resume...
-              </>
-            ) : (
-              "Get Job Recommendations"
-            )}
-          </Button>
-        </div>
-      )}
-
-      {jobs.length > 0 && (
-        <div className="mt-6 space-y-4">
-          <h3 className="text-lg font-semibold">
-            Recommended Jobs ({jobs.length})
-          </h3>
-          <div className="space-y-4">
-            {jobs.map((job) => (
-              <div key={job.id} className="p-4 border rounded-lg bg-background">
-                <h4 className="font-medium">{job.title}</h4>
-                <p className="text-sm text-muted-foreground">{job.company}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
-                    {job.relevance}% match
-                  </span>
-                  {job.matchedSkills && (
-                    <span className="text-xs px-2 py-1 bg-secondary/10 text-secondary rounded-full">
-                      {job.matchedSkills} skills matched
-                    </span>
-                  )}
-                </div>
-                <p className="mt-2 text-sm line-clamp-2">{job.description}</p>
-                {job.required_skills?.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-xs text-muted-foreground">Key Skills:</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {job.required_skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="text-xs px-2 py-1 bg-muted rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+              <input {...getInputProps()} />
+              <div className="p-12 text-center">
+                {uploading ? (
+                  <div className="space-y-4">
+                    <div className="relative mx-auto w-12 h-12">
+                      <div className="absolute inset-0 w-12 h-12 border-4 border-muted rounded-full"></div>
+                      <div className="absolute inset-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">Uploading your resume...</p>
+                      <p className="text-sm text-muted-foreground">
+                        This may take a few moments
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-w-2xl">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
+                      <UploadIcon className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {isDragActive
+                          ? "Drop your resume here"
+                          : "Drag & drop your resume"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        or <span className="text-primary">browse files</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center space-x-4 text-xs text-muted-foreground">
+                      <span className="flex items-center space-x-1">
+                        <div className="w-1 h-1 bg-current rounded-full"></div>
+                        <span>PDF or DOCX</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <div className="w-1 h-1 bg-current rounded-full"></div>
+                        <span>Max 5MB</span>
+                      </span>
                     </div>
                   </div>
                 )}
               </div>
-            ))}
+            </div>
           </div>
+        )}
+
+        {/* Resume Preview Section */}
+        {fileUrl && (
+          <div className="space-y-6 w-xl">
+            <div className="rounded-xl border bg-card p-6">
+              <div className="flex items-start justify-between space-x-4">
+                <div className="flex items-start space-x-3 flex-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <p className="font-semibold text-sm">Resume uploaded</p>
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    </div>
+                    <a
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-1 text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <span>View document</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveResume}
+                  disabled={loading}
+                  className="flex-shrink-0 h-8 w-8 p-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Button
+              onClick={handleRecommendJobs}
+              disabled={loading}
+              size="lg"
+              className="w-full h-12 text-base font-medium"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Analyzing your resume...</span>
+                </div>
+              ) : (
+                "Get Job Recommendations"
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Jobs Section */}
+      {jobs.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">Recommended Jobs</h2>
+              <p className="text-sm text-muted-foreground">
+                Found {jobs.length} job{jobs.length !== 1 ? "s" : ""} matching
+                your profile
+              </p>
+            </div>
+          </div>
+          <JobsGrid jobs={jobs} />
         </div>
       )}
     </div>

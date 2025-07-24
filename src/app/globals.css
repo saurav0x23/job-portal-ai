@@ -123,3 +123,64 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes floatRandom0 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, -15px);
+  }
+  50% {
+    transform: translate(-5px, -25px);
+  }
+  75% {
+    transform: translate(15px, -10px);
+  }
+}
+@keyframes floatRandom1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-20px, 5px);
+  }
+  50% {
+    transform: translate(10px, -15px);
+  }
+  75% {
+    transform: translate(-10px, -20px);
+  }
+}
+@keyframes floatRandom2 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(15px, -5px);
+  }
+  50% {
+    transform: translate(-10px, -30px);
+  }
+  75% {
+    transform: translate(5px, -15px);
+  }
+}
+@keyframes floatRandom3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-15px, -10px);
+  }
+  50% {
+    transform: translate(20px, -20px);
+  }
+  75% {
+    transform: translate(-5px, -25px);
+  }
+}

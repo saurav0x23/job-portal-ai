@@ -11,15 +11,9 @@ type Job = {
   matchedSkills?: number;
 };
 
-type AIInsights = {
-  titles: string[];
-  skills: string[];
-  experience: string;
-};
-
 type JobState = {
   jobs: Job[];
-  aiInsights: AIInsights;
+  relevence: number;
   loading: boolean;
   error: string | null;
   fetchJobs: (resumeUrl: string) => Promise<void>;
@@ -28,7 +22,7 @@ type JobState = {
 
 export const useJobStore = create<JobState>((set) => ({
   jobs: [],
-  aiInsights: { titles: [], skills: [], experience: "" },
+  relevence: 0,
   loading: false,
   error: null,
 
@@ -58,16 +52,18 @@ export const useJobStore = create<JobState>((set) => ({
 
       const result = await response.json();
 
-      if (!result.jobs || !result.aiInsights) {
+      if (!result.jobs) {
         throw new Error("Invalid response format from server");
       }
+      console.log("Job recommendations:", result);
 
       set({
         jobs: result.jobs,
-        aiInsights: result.aiInsights,
+        relevence: result.relevence || 0,
         loading: false,
         error: null,
       });
+      console.log("Job recommendations fetched successfully:", result.jobs);
 
       toast.success(
         `Found ${result.jobs.length} matching jobs!` +
@@ -79,7 +75,7 @@ export const useJobStore = create<JobState>((set) => ({
         loading: false,
         error: error.message || "Failed to get job recommendations",
         jobs: [],
-        aiInsights: { titles: [], skills: [], experience: "" },
+        relevence: 0,
       });
       toast.error(error.message || "Failed to process resume");
     }
@@ -88,7 +84,7 @@ export const useJobStore = create<JobState>((set) => ({
   reset: () => {
     set({
       jobs: [],
-      aiInsights: { titles: [], skills: [], experience: "" },
+      relevence: 0,
       error: null,
       loading: false,
     });

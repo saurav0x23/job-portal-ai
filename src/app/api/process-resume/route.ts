@@ -6,6 +6,15 @@ import { NextResponse } from "next/server";
 import mammoth from "mammoth";
 import PDFParser from "pdf2json";
 
+interface Job {
+  id: string;
+  title: string;
+  description: string;
+  company: string;
+  location: string;
+  skills: string[];
+}
+
 // Extract PDF text using pdf2json
 async function extractTextWithPdf2json(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -26,7 +35,6 @@ async function extractTextWithPdf2json(buffer: Buffer): Promise<string> {
 // PDF extractor with fallback
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   const methods = [{ name: "pdf2json", fn: extractTextWithPdf2json }];
-
   let lastError: Error | null = null;
 
   for (const method of methods) {
@@ -47,7 +55,7 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   );
 }
 
-// Handle any supported file type
+// Extract text from buffer
 async function extractTextFromBuffer(
   buffer: Buffer,
   fileType: string,
@@ -76,8 +84,8 @@ export async function POST(request: Request) {
 
   try {
     const contentType = request.headers.get("content-type") || "";
-
     let resumeUrl = "";
+
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
       resumeUrl = formData.get("resumeUrl")?.toString() || "";
@@ -93,7 +101,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Download the resume file
+    // Download resume
     const response = await fetch(resumeUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch resume: HTTP ${response.status}`);
@@ -107,7 +115,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate PDF
+    // Validate PDF signature
     const fileType = response.headers.get("content-type") || "";
     if (
       (fileType.includes("pdf") || resumeUrl.toLowerCase().endsWith(".pdf")) &&
@@ -116,7 +124,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid PDF file." }, { status: 400 });
     }
 
-    // Extract text from file
+    // Extract text
     const extractedText = await extractTextFromBuffer(
       buffer,
       fileType,
@@ -129,90 +137,64 @@ export async function POST(request: Request) {
       );
     }
 
-    // Initialize Supabase and fetch jobs
+    // Fetch job IDs
     const supabase = createClient();
     const { data: jobs, error: jobsError } = await (await supabase)
       .from("jobs")
-      .select("*");
+      .select("id, title");
 
     if (jobsError) {
       throw new Error(`Failed to fetch jobs: ${jobsError.message}`);
     }
 
-    // Analyze resume with job context
-    const aiData = await analyzeResume(extractedText, jobs || []);
-    if (
-      !aiData ||
-      !Array.isArray(aiData.titles) ||
-      !Array.isArray(aiData.skills)
-    ) {
+    // AI analyze resume
+    const aiResponse = await analyzeResume(extractedText, jobs);
+    let matchedIds = aiResponse.matchedJobIds.filter(Boolean);
+
+    if (matchedIds.length === 0) {
+      // fallback based on title similarity
+      const fallbackTitles = aiResponse?.titles || [];
+      matchedIds = jobs
+        .filter((job) => fallbackTitles.includes(job.title))
+        .map((job) => job.id);
+    }
+
+    if (!matchedIds.length) {
       return NextResponse.json(
-        { error: "AI analysis returned invalid format" },
-        { status: 500 }
+        { error: "AI returned no matched job IDs" },
+        { status: 404 }
       );
     }
 
-    // Build query based on AI analysis
-    let query = (await supabase).from("jobs").select("*"); // ← no await here
+    // Fetch matching jobs by ID
+    const { data: matchedJobs, error: fetchError } = await (await supabase)
+      .from("jobs")
+      .select("*")
+      .in("id", matchedIds);
 
-    const titleConditions = aiData.titles
-      .filter(Boolean)
-      .map((title: string) => `title.ilike.%${title.trim()}%`);
-
-    const skills = aiData.skills.filter(Boolean);
-
-    if (titleConditions.length || skills.length) {
-      const filters = [];
-
-      if (titleConditions.length) {
-        filters.push(`(${titleConditions.join(" or ")})`);
-      }
-      if (skills.length) {
-        filters.push(`required_skills.ov.{${skills.join(",")}}`);
-      }
-
-      query = query.or(filters.join(",")); // This is now valid
+    if (fetchError) {
+      throw new Error(`Failed to fetch matched jobs: ${fetchError.message}`);
     }
 
-    const { data, error } = await query; // await only here
-
-    if (error) {
-      console.error("Error fetching jobs:", error.message);
-    } else {
-      console.log("Fetched jobs:", data);
-    }
-
-    // Execute the query
-    const { data: matchedJobs, error: queryError } = await query;
-
-    if (queryError) {
-      console.error("Job query error:", queryError);
+    if (!matchedJobs || matchedJobs.length === 0) {
       return NextResponse.json(
-        { error: "Failed to query jobs" },
-        { status: 500 }
+        { error: "No matching jobs found" },
+        { status: 404 }
       );
     }
 
-    // Enhance jobs with AI matching data
-    const enhancedJobs = (matchedJobs || [])
-      .map((job) => {
-        const match = aiData.bestMatches?.find((m: any) => m.jobId === job.id);
-        return {
-          ...job,
-          relevance: match?.matchScore || 0,
-          matchedSkills: match?.matchingSkills?.length || 0,
-        };
-      })
-      .sort((a, b) => b.relevance - a.relevance);
+    // Optionally add match score from AI to each job
+    const enrichedJobs = matchedJobs.map((job) => {
+      const match = aiResponse.matchedJobIds.find((m) => m.jobId === job.id);
+      return {
+        ...job,
+        relevance: match?.matchScore || 0,
+        matchedSkills: match?.matchingSkills || [],
+      };
+    });
 
     return NextResponse.json({
-      jobs: enhancedJobs,
-      aiInsights: aiData,
-      summary: {
-        totalJobs: enhancedJobs.length,
-        topRelevance: enhancedJobs[0]?.relevance || 0,
-        extractedTextLength: extractedText.length,
-      },
+      jobs: enrichedJobs,
     });
   } catch (err: any) {
     console.error("Resume processing error:", err);

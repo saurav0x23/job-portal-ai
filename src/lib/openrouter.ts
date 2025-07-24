@@ -1,16 +1,17 @@
 export const analyzeResume = async (resumeText: string, jobsData: any) => {
   try {
-    // Prepare jobs information for the AI
     const jobsSummary = jobsData
       ? jobsData
           .map(
             (job) =>
-              `Job Title: ${
-                job.title
-              }\nRequired Skills: ${job.required_skills?.join(", ")}\n\n`
+              `---\n[Job ID: ${job.id}]\nTitle: ${job.title}\nCompany: ${
+                job.company
+              }\nLocation: ${job.location}\nSkills: ${job.required_skills?.join(
+                ", "
+              )}\n`
           )
-          .join("")
-          .slice(0, 5000) // Limit jobs context
+          .join("\n")
+          .slice(0, 5000)
       : "No job data provided";
 
     const response = await fetch(
@@ -26,29 +27,24 @@ export const analyzeResume = async (resumeText: string, jobsData: any) => {
           messages: [
             {
               role: "system",
-              content: `Analyze this resume and match it against available jobs. Return JSON format: {
-                titles: string[] (suggested job titles based on resume and available jobs),
-                skills: string[] (key skills from resume that match job requirements),
-                experience: string (years summary),
-                relevance: number (0-100, how well the resume matches the job market),
-                bestMatches: {
-                  jobId: string,
-                  matchScore: number,
-                  matchingSkills: string[]
-                }[]
-              }
-              
-              Available Jobs Summary:
-              ${jobsSummary}
-              `,
+              content: `You are a helpful assistant. Analyze the following resume and find the 3–5 best matching jobs from the job list. Return only their Job IDs (exactly as written) in this format:
+
+{
+  "matchedJobIds": ["", ""],
+}
+
+Only use the Job IDs that are explicitly labeled as [Job ID: xxxx] below.
+
+Jobs:
+${jobsSummary}`,
             },
             {
               role: "user",
-              content: `Resume Content:\n${resumeText.slice(0, 15000)}`, // Limit to first 15k characters
+              content: `Resume Content:\n${resumeText.slice(0, 15000)}`,
             },
           ],
           response_format: { type: "json_object" },
-          max_tokens: 1500, // Increased for more comprehensive analysis
+          max_tokens: 1000,
         }),
       }
     );
@@ -60,25 +56,15 @@ export const analyzeResume = async (resumeText: string, jobsData: any) => {
     const data = await response.json();
     const result = JSON.parse(data.choices[0].message.content);
 
-    // Validate and normalize response
     return {
-      titles: Array.isArray(result.titles) ? result.titles.slice(0, 5) : [],
-      skills: Array.isArray(result.skills) ? result.skills.slice(0, 15) : [],
-      experience: result.experience || "",
-      relevance:
-        typeof result.relevance === "number"
-          ? Math.min(100, Math.max(0, result.relevance))
-          : 0,
-      bestMatches: Array.isArray(result.bestMatches) ? result.bestMatches : [],
+      matchedJobIds: Array.isArray(result.matchedJobIds)
+        ? result.matchedJobIds
+        : [],
     };
   } catch (error) {
     console.error("AI analysis failed:", error);
     return {
-      titles: [],
-      skills: [],
-      experience: "",
-      relevance: 0,
-      bestMatches: [],
+      matchedJobIds: [],
     };
   }
 };

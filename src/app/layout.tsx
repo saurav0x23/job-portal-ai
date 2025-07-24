@@ -7,6 +7,7 @@ import Loader from "@/components/Loader";
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { createClient } from "@/utils/supabase/client";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -61,6 +62,7 @@ export default function RootLayout({
             <>
               <Navbar />
               {children}
+              <Footer />
               <Toaster richColors />
             </>
           )}
