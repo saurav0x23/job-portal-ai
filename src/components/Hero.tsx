@@ -41,7 +41,7 @@ const Hero = () => {
     }, 4000);
 
     return () => clearInterval(textInterval);
-  }, []);
+  }, [rotatingTexts.length]);
 
   const features = [
     { icon: FileText, text: "AI Resume Enhancement" },

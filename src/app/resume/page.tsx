@@ -20,7 +20,7 @@ export default function UploadResume() {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [resumeChecked, setResumeChecked] = useState(false);
-  const { jobs, relevence, fetchJobs } = useJobStore();
+  const { jobs, fetchJobs } = useJobStore();
 
   const supabase = createClient();
   const maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -65,80 +65,79 @@ export default function UploadResume() {
     fetchResume();
   }, [supabase]);
 
-  const { getRootProps, getInputProps, isDragActive, fileRejections } =
-    useDropzone({
-      accept: {
-        "application/pdf": [".pdf"],
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-          [".docx"],
-      },
-      maxSize: maxFileSize,
-      multiple: false,
-      disabled: uploading,
-      onDropAccepted: async (acceptedFiles) => {
-        const file = acceptedFiles[0];
-        setUploading(true);
-        setFileUrl(null);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+    },
+    maxSize: maxFileSize,
+    multiple: false,
+    disabled: uploading,
+    onDropAccepted: async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      setUploading(true);
+      setFileUrl(null);
 
-        try {
-          const {
-            data: { user },
-            error: authError,
-          } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-          if (authError || !user) {
-            throw new Error("Authentication required");
-          }
-
-          const fileExt = file.name.split(".").pop();
-          const fileName = `resume.${fileExt}`;
-          const filePath = `resumes/${user.id}/${fileName}`;
-
-          // Remove existing resume if any
-          const { data: existingFiles } = await supabase.storage
-            .from("resume")
-            .list(`resumes/${user.id}`);
-
-          if (existingFiles && existingFiles.length > 0) {
-            await supabase.storage
-              .from("resume")
-              .remove(existingFiles.map((f) => `resumes/${user.id}/${f.name}`));
-          }
-
-          // Upload new file
-          const { error: uploadError } = await supabase.storage
-            .from("resume")
-            .upload(filePath, file, {
-              cacheControl: "3600",
-              upsert: true,
-            });
-
-          if (uploadError) throw uploadError;
-
-          // Get public URL
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("resume").getPublicUrl(filePath);
-
-          setFileUrl(publicUrl);
-          toast.success("Resume uploaded successfully!");
-        } catch (err: any) {
-          console.error("Upload error:", err);
-          toast.error(err.message || "Failed to upload resume");
-        } finally {
-          setUploading(false);
+        if (authError || !user) {
+          throw new Error("Authentication required");
         }
-      },
-      onDropRejected: (fileRejections) => {
-        const rejection = fileRejections[0];
-        const error = rejection.errors[0];
-        toast.error(
-          error.code === "file-too-large"
-            ? "File size exceeds 5MB"
-            : "Invalid file format. Please upload PDF or DOCX"
-        );
-      },
-    });
+
+        const fileExt = file.name.split(".").pop();
+        const fileName = `resume.${fileExt}`;
+        const filePath = `resumes/${user.id}/${fileName}`;
+
+        // Remove existing resume if any
+        const { data: existingFiles } = await supabase.storage
+          .from("resume")
+          .list(`resumes/${user.id}`);
+
+        if (existingFiles && existingFiles.length > 0) {
+          await supabase.storage
+            .from("resume")
+            .remove(existingFiles.map((f) => `resumes/${user.id}/${f.name}`));
+        }
+
+        // Upload new file
+        const { error: uploadError } = await supabase.storage
+          .from("resume")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: true,
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("resume").getPublicUrl(filePath);
+
+        setFileUrl(publicUrl);
+        toast.success("Resume uploaded successfully!");
+      } catch (err: any) {
+        console.error("Upload error:", err);
+        toast.error(err.message || "Failed to upload resume");
+      } finally {
+        setUploading(false);
+      }
+    },
+    onDropRejected: (fileRejections) => {
+      const rejection = fileRejections[0];
+      const error = rejection.errors[0];
+      toast.error(
+        error.code === "file-too-large"
+          ? "File size exceeds 5MB"
+          : "Invalid file format. Please upload PDF or DOCX"
+      );
+    },
+  });
 
   const handleRecommendJobs = async () => {
     if (!fileUrl) {

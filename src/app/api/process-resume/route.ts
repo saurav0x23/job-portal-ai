@@ -142,14 +142,6 @@ export async function POST(request: Request) {
     const aiResponse = await analyzeResume(extractedText, jobs);
     let matchedIds = aiResponse.matchedJobIds.filter(Boolean);
 
-    if (matchedIds.length === 0) {
-      // fallback based on title similarity
-      const fallbackTitles = aiResponse?.titles || [];
-      matchedIds = jobs
-        .filter((job) => fallbackTitles.includes(job.title))
-        .map((job) => job.id);
-    }
-
     if (!matchedIds.length) {
       return NextResponse.json(
         { error: "AI returned no matched job IDs" },

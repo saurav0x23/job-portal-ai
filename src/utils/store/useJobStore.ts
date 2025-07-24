@@ -69,7 +69,7 @@ export const useJobStore = create<JobState>((set) => ({
         `Found ${result.jobs.length} matching jobs!` +
           (result.summary ? ` Top match: ${result.summary.topRelevance}%` : "")
       );
-    } catch (error: any) {
+    } catch (error: string | any) {
       console.error("Job recommendation error:", error);
       set({
         loading: false,

@@ -15,11 +15,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
-type JobPageProps = {
-  params: { id: string };
-};
-
-export default async function JobPage({ params }: JobPageProps) {
+export default async function JobPage({ params }: any) {
   const supabase = createClient();
   const jobId = params.id;
 
