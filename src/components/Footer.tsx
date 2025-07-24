@@ -80,7 +80,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
-              <span className="text-xl font-bold">CareerBoost AI</span>
+              <span className="text-xl font-bold">SkillSync</span>
             </Link>
             <p className="text-muted-foreground max-w-xs">
               The AI-powered job platform that helps you land your dream career
@@ -116,7 +116,7 @@ const Footer = () => {
             <address className="not-italic text-muted-foreground space-y-3">
               <p>123 Career Street</p>
               <p>San Francisco, CA 94107</p>
-              <p>hello@careerboost.ai</p>
+              <p>hello@skillsync.ai</p>
               <p>+1 (555) 123-4567</p>
             </address>
 
@@ -142,7 +142,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t border-border/50 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} CareerBoost AI. All rights reserved.
+            © {currentYear} SkillSync. All rights reserved.
           </p>
 
           <div className="flex gap-6">

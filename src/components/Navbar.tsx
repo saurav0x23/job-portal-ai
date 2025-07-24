@@ -37,10 +37,10 @@ export function Navbar() {
     <div className="w-full flex items-center justify-center p-4">
       <NavigationMenu className="w-full max-w-6xl flex items-center justify-between">
         <NavigationMenuLink href="/">
-          <p className="text-lg font-bold">CAREERBOOST Ai</p>
+          <p className="text-lg font-bold">SkillSync.</p>
           <div className=" hover:bg-foreground/70 h-0.5 w-full bg-foreground"></div>
         </NavigationMenuLink>
-        <NavigationMenuList className="flex space-x-4 items-center">
+        <NavigationMenuList className="flex space-x-4 items-center pl-12">
           {navLinks.map((link) => (
             <NavigationMenuItem key={link.href}>
               <NavigationMenuLink href={link.href}>

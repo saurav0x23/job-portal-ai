@@ -74,7 +74,7 @@ const HomePage = () => {
       company: "Google",
       image: "/api/placeholder/64/64",
       content:
-        "CareerBoost AI helped me land my dream job at Google. The AI-powered resume enhancement was incredible!",
+        "SkillSync helped me land my dream job at Google. The AI-powered resume enhancement was incredible!",
       rating: 5,
     },
     {
@@ -106,7 +106,7 @@ const HomePage = () => {
     {
       question: "Is the platform free to use?",
       answer:
-        "Yes! CareerBoost AI offers a free tier that includes basic resume analysis and job matching. We also offer premium plans with advanced features like unlimited resume revisions and priority job applications.",
+        "Yes! SkillSync offers a free tier that includes basic resume analysis and job matching. We also offer premium plans with advanced features like unlimited resume revisions and priority job applications.",
     },
     {
       question: "How accurate is the job matching algorithm?",
@@ -188,7 +188,7 @@ const HomePage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Choose CareerBoost AI?
+              Why Choose SkillSync?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Powerful features designed to accelerate your career growth and
@@ -246,7 +246,7 @@ const HomePage = () => {
               Success Stories
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              See how CareerBoost AI has transformed careers and helped
+              See how SkillSync has transformed careers and helped
               professionals land their dream jobs.
             </p>
           </div>
@@ -297,7 +297,7 @@ const HomePage = () => {
               Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground">
-              Everything you need to know about CareerBoost AI
+              Everything you need to know about SkillSync
             </p>
           </div>
 
@@ -344,7 +344,7 @@ const HomePage = () => {
 
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
             Join thousands of professionals who've already accelerated their
-            careers with CareerBoost AI. Your dream job is just one click away.
+            careers with SkillSync. Your dream job is just one click away.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

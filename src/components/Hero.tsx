@@ -10,7 +10,7 @@ const Hero = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const rotatingTexts = [
-    "Land your dream job with CareerBoost AI",
+    "Land your dream job with SkillSync",
     "Transform your career with AI power",
     "Get matched with perfect opportunities",
   ];
