@@ -2,10 +2,20 @@
 import { useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 import { JobsGrid } from "@/components/JobsGrid";
-import { Loader2, Briefcase, Search } from "lucide-react";
+import { Briefcase, Search } from "lucide-react";
 
+type Job = {
+  id: string;
+  title: string;
+  company: string;
+  description: string;
+  required_skills: string[];
+  relevance: number;
+  matchedSkills?: number;
+  posted: string;
+};
 const JobsListingPage = () => {
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
@@ -105,7 +115,7 @@ const JobsListingPage = () => {
                       {
                         jobs.filter(
                           (job) =>
-                            new Date(job.posted_at) >
+                            new Date(job?.posted) >
                             new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
                         ).length
                       }

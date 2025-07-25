@@ -140,7 +140,7 @@ export async function POST(request: Request) {
 
     // AI analyze resume
     const aiResponse = await analyzeResume(extractedText, jobs);
-    let matchedIds = aiResponse.matchedJobIds.filter(Boolean);
+    const matchedIds = aiResponse.matchedJobIds.filter(Boolean);
 
     if (!matchedIds.length) {
       return NextResponse.json(
@@ -168,7 +168,9 @@ export async function POST(request: Request) {
 
     // Optionally add match score from AI to each job
     const enrichedJobs = matchedJobs.map((job) => {
-      const match = aiResponse.matchedJobIds.find((m) => m.jobId === job.id);
+      const match = aiResponse.matchedJobIds.find(
+        (m: any) => m.jobId === job.id
+      );
       return {
         ...job,
         relevance: match?.matchScore || 0,
