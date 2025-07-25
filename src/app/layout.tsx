@@ -66,7 +66,7 @@ export default function RootLayout({
           ) : (
             <>
               <Navbar />
-              {children}
+              <div className="flex-1 min-h-screen">{children}</div>
               <Footer />
               <Toaster richColors />
             </>

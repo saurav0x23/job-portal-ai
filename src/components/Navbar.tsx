@@ -48,7 +48,7 @@ export function Navbar() {
         <NavigationMenuList className="flex space-x-4 items-center pl-12">
           {navLinks.map((link) => (
             <NavigationMenuItem key={link.href}>
-              <NavigationMenuLink href={link.href}>
+              <NavigationMenuLink href={link.href} >
                 {link.label}
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -65,7 +65,7 @@ export function Navbar() {
               </NavigationMenuLink>
             ) : (
               <NavigationMenuLink
-                href="/register"
+                href="/auth"
                 className="ml-2 border border-primary bg-foreground text-background px-4 py-2 rounded-md hover:bg-primary hover:text-background/90 transition-all duration-200 ease-in-out"
               >
                 Get Started
