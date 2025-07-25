@@ -6,7 +6,7 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 export default function Loader() {
   return (
     <motion.div
-      className="flex items-center justify-center min-h-screen bg-gray-400"
+      className="flex items-center justify-center min-h-screen bg-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

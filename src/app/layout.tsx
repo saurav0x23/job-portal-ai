@@ -34,19 +34,24 @@ export default function RootLayout({
     }
   }, [loading]);
 
-  const checkAuth = async () => {
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      window.location.href = "/login"; // Redirect to login if not authenticated
-    }
-  };
-
   useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const isPublicPage = ["/login", "/register"].includes(
+        window.location.pathname
+      );
+      if (!session && !isPublicPage) {
+        window.location.href = "/login";
+      }
+    };
+
     checkAuth();
   }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">

@@ -13,7 +13,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(false);
 
   const { theme, setTheme } = useTheme();
   const navLinks = [
@@ -29,10 +29,15 @@ export function Navbar() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUser(user || null);
+
+      if (user) {
+        setUser(true);
+      }
     };
+
     fetchUser();
   }, [supabase]);
+
   return (
     <div className="w-full flex items-center justify-center p-4">
       <NavigationMenu className="w-full max-w-6xl flex items-center justify-between">

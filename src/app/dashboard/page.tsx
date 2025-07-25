@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface UserData {
   id: string;
@@ -24,23 +25,25 @@ const Dashboard = () => {
 
     checkSession();
   }, [supabase]);
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data, error } = await supabase.from("users").select("*").single();
-      if (error) {
-        console.error("Error fetching user data:", error.message);
-      } else {
-        setUserData(data);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     const { data, error } = await supabase.from("users").select("*").single();
+  //     if (error) {
+  //       console.error("Error fetching user data:", error.message);
+  //     } else {
+  //       setUserData(data);
+  //     }
+  //   };
 
-    fetchUserData();
-  }, [supabase]);
+  //   fetchUserData();
+  // }, [supabase]);
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error logging out:", error.message);
     }
+    window.location.href = "/login";
+    toast.success("Logged out successfully");
   };
   return (
     <>

@@ -3,7 +3,7 @@ export const analyzeResume = async (resumeText: string, jobsData: any) => {
     const jobsSummary = jobsData
       ? jobsData
           .map(
-            (job) =>
+            (job: any) =>
               `---\n[Job ID: ${job.id}]\nTitle: ${job.title}\nCompany: ${
                 job.company
               }\nLocation: ${job.location}\nSkills: ${job.required_skills?.join(
