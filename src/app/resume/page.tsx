@@ -1,10 +1,10 @@
 "use client";
 import { JobsGrid } from "@/components/JobsGrid";
+import ResumeAnalyzerLoader from "@/components/ResumeAnalyzerLoader";
 import { Button } from "@/components/ui/button";
 import { useJobStore } from "@/utils/store/useJobStore";
 import { createClient } from "@/utils/supabase/client";
 import {
-  Loader2,
   UploadIcon,
   FileText,
   Trash2,
@@ -52,7 +52,6 @@ export default function UploadResume() {
             .getPublicUrl(resumePath);
 
           setFileUrl(urlData.publicUrl);
-          toast.success("Resume found!");
         }
       } catch (e) {
         console.error("Error checking resume:", e);
@@ -149,8 +148,7 @@ export default function UploadResume() {
     try {
       await fetchJobs(fileUrl);
     } catch (error) {
-      console.error("Error fetching jobs:", error);
-      toast.error("Failed to get job recommendations");
+      toast.error("Please try again. Failed to get job recommendations");
     } finally {
       setLoading(false);
     }
@@ -316,14 +314,7 @@ export default function UploadResume() {
               size="lg"
               className="w-full h-12 text-base font-medium"
             >
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Analyzing your resume...</span>
-                </div>
-              ) : (
-                "Get Job Recommendations"
-              )}
+              {loading ? <ResumeAnalyzerLoader /> : "Get Job Recommendations"}
             </Button>
           </div>
         )}
@@ -331,7 +322,7 @@ export default function UploadResume() {
 
       {/* Jobs Section */}
       {jobs.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-6 min-h-screen">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <h2 className="text-xl font-semibold">Recommended Jobs</h2>
